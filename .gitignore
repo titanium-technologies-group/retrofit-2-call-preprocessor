@@ -1,0 +1,20 @@
+
+bin
+gen
+build
+out
+lib
+
+target
+pom.xml.*
+local.properties
+
+# Idea
+.idea
+*.iml
+classes
+
+obj
+
+#MacOS
+.DS_Store

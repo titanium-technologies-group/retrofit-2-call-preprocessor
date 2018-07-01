@@ -1,0 +1,46 @@
+apply plugin: 'com.jfrog.bintray'
+
+def buildName = "1.0.0"
+def mSiteUrl = 'https://github.com/titanium-codes'
+def mGitUrl = 'https://github.com/titanium-codes/RxPremapper'
+
+tasks.whenTaskAdded { task ->
+    if (task.name == 'javadoc') {
+        task.configure {
+            failOnError false
+        }
+    }
+}
+
+ext {
+    bintrayRepo = 'Android'
+    bintrayName = 'rxpremapper'
+
+    publishedGroupId = 'codes.titanium'
+    libraryName = 'rxpremapper'
+    artifact = 'rxpremapper'
+
+    libraryDescription = 'Adapter for retrofit to preprocess objects just after request'
+
+    // Your github repo link
+    siteUrl = mSiteUrl
+    gitUrl = mGitUrl
+    githubRepository = 'titanium-codes/RxPremapper'
+
+    libraryVersion = buildName
+
+    developerId = 'blainepwnz'
+    developerName = 'Andrew Tomash'
+    developerEmail = 'andrew.tomash@titanium-soft.com'
+    licenseName = 'MIT'
+    licenseUrl = 'https://opensource.org/licenses/MIT'
+    allLicenses = ["MIT"]
+}
+bintray {
+    pkg {
+        userOrg = "titanium-codes"
+    }
+}
+apply from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/bintrayv1.gradle'
+

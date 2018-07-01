@@ -1,0 +1,22 @@
+buildscript {
+    dependencies {
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+    }
+}
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
+}
+apply plugin: 'java'
+apply from: 'bintray.gradle'
+
+group 'codes.titanium.rxpreprocessor'
+repositories {
+    mavenCentral()
+}
+sourceCompatibility = 1.8
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.4.0'
+}
+
