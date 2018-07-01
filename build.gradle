@@ -9,7 +9,10 @@ plugins {
 apply plugin: 'java'
 apply from: 'bintray.gradle'
 
-group 'codes.titanium.rxpreprocessor'
+group = 'codes.titanium'
+artifact = "rxpremapper"
+version = "1.0.0"
+
 repositories {
     mavenCentral()
 }

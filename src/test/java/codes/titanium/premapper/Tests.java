@@ -9,6 +9,8 @@ import retrofit2.HttpException;
 import retrofit2.Retrofit;
 import rx.Observable;
 import rx.observers.TestSubscriber;
+import rx.plugins.RxJavaHooks;
+import rx.schedulers.Schedulers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +24,7 @@ public class Tests {
 
   @Before
   public void setUp() throws Exception {
+    RxJavaHooks.setOnIOScheduler(scheduler -> Schedulers.immediate());
     interceptor = new HttpTestInterceptor();
   }
 
@@ -34,7 +37,7 @@ public class Tests {
         .client(client)
         .addConverterFactory(new TestEntityConverter())
         .addConverterFactory(new StringConverter())
-        .addCallAdapterFactory(RequestPreprocessRxJavaAdapter.create(flatMappers))
+        .addCallAdapterFactory(RequestPreprocessRxJavaAdapter.createWithScheduler(Schedulers.io(), flatMappers))
         .build();
     testService = retrofit.create(TestService.class);
   }
