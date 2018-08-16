@@ -8,10 +8,12 @@ plugins {
 }
 apply plugin: 'java'
 apply from: 'bintray.gradle'
+apply from: 'deps.gradle'
+
 
 group = 'codes.titanium'
-artifact = "rxpremapper"
-version = "1.0.0"
+artifact = "preprocessor"
+version = versions.publishVersion
 
 repositories {
     mavenCentral()
@@ -20,6 +22,7 @@ sourceCompatibility = 1.8
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile 'com.squareup.retrofit2:adapter-rxjava:2.4.0'
+    compile 'com.squareup.retrofit2:retrofit:2.4.0'
+    testCompile 'com.squareup.retrofit2:adapter-rxjava:2.4.0'
 }
 

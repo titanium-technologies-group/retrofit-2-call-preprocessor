@@ -1,8 +1,8 @@
 apply plugin: 'com.jfrog.bintray'
+apply from: 'deps.gradle'
 
-def buildName = "1.0.0"
 def mSiteUrl = 'https://github.com/titanium-codes'
-def mGitUrl = 'https://github.com/titanium-codes/RxPremapper'
+def mGitUrl = 'https://github.com/titanium-codes/retrofit-2-call-preprocessor'
 
 tasks.withType(Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
@@ -12,20 +12,20 @@ tasks.withType(Javadoc) {
 
 ext {
     bintrayRepo = 'Android'
-    bintrayName = 'rxpremapper'
+    bintrayName = versions.artifact
 
     publishedGroupId = 'codes.titanium'
-    libraryName = 'rxpremapper'
-    artifact = 'rxpremapper'
+    libraryName = versions.artifact
+    artifact = versions.artifact
 
     libraryDescription = 'Adapter for retrofit to preprocess objects just after request'
 
     // Your github repo link
     siteUrl = mSiteUrl
     gitUrl = mGitUrl
-    githubRepository = 'titanium-codes/RxPremapper'
+    githubRepository = 'titanium-codes/retrofit-2-call-preprocessor'
 
-    libraryVersion = buildName
+    libraryVersion = versions.publishVersion
 
     developerId = 'blainepwnz'
     developerName = 'Andrew Tomash'

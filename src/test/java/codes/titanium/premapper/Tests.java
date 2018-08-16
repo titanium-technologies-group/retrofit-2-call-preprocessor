@@ -7,15 +7,16 @@ import org.junit.Before;
 import org.junit.Test;
 import retrofit2.HttpException;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 import rx.plugins.RxJavaHooks;
 import rx.schedulers.Schedulers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 public class Tests {
 
@@ -28,7 +29,7 @@ public class Tests {
     interceptor = new HttpTestInterceptor();
   }
 
-  private void initRetrofit(List<FlatMapper> flatMappers) {
+  private void initRetrofit(List<Preprocessor> preprocessors) {
     OkHttpClient client = new OkHttpClient.Builder()
         .addInterceptor(interceptor)
         .build();
@@ -37,17 +38,16 @@ public class Tests {
         .client(client)
         .addConverterFactory(new TestEntityConverter())
         .addConverterFactory(new StringConverter())
-        .addCallAdapterFactory(RequestPreprocessRxJavaAdapter.createWithScheduler(Schedulers.io(), flatMappers))
+        .addCallAdapterFactory(PreprocessAdapter.create(RxJavaCallAdapterFactory.create(), preprocessors))
         .build();
     testService = retrofit.create(TestService.class);
   }
 
   @Test
-  public void workingProperlyWithFlatmapper() throws Exception {
+  public void workingProperlyWithPreprocessor() throws Exception {
     String name = "testName";
-    FlatMapper<TestEntity> testEntityFlatMapper = createFlatmapperForClass(TestEntity.class,
-        testEntityObservable -> testEntityObservable.doOnNext(testEntity -> testEntity.setTestString(name)));
-    initRetrofit(Collections.singletonList(testEntityFlatMapper));
+    Preprocessor<Observable<TestEntity>> testEntityPreprocessor = createDefaultTestEntityPreprocessor(name);
+    initRetrofit(Collections.singletonList(testEntityPreprocessor));
     interceptor.addToQueue(200, "");
     TestSubscriber<TestEntity> subscriber = new TestSubscriber<>();
     testService.getEntity().subscribe(subscriber);
@@ -60,9 +60,8 @@ public class Tests {
   @Test
   public void onErrorLogicWorkingProperly() throws Exception {
     String name = "testName";
-    FlatMapper<TestEntity> testEntityFlatMapper = createFlatmapperForClass(TestEntity.class,
-        testEntityObservable -> testEntityObservable.map(testEntity -> testEntity.setTestString(name)));
-    initRetrofit(Collections.singletonList(testEntityFlatMapper));
+    Preprocessor<Observable<TestEntity>> testEntityPreprocessor = createDefaultTestEntityPreprocessor(name);
+    initRetrofit(Collections.singletonList(testEntityPreprocessor));
     interceptor.addToQueue(400, "");
     TestSubscriber<TestEntity> subscriber = new TestSubscriber<>();
     testService.getEntity().subscribe(subscriber);
@@ -70,7 +69,64 @@ public class Tests {
   }
 
   @Test
-  public void workingProperlyWithoutFlatmapper() throws Exception {
+  public void retriesInCaseOfFail() throws Exception {
+    String name = "testName";
+    Preprocessor<Observable<TestEntity>> testEntityPreprocessor = createDefaultTestEntityPreprocessor(name);
+    Preprocessor<Observable<?>> generalPreprocessor = new Preprocessor<Observable<?>>() {
+      @Override
+      public Observable<?> preprocess(Observable<?> source) {
+        return source.retry(1);
+      }
+    };
+    initRetrofit(Arrays.asList(generalPreprocessor, testEntityPreprocessor));
+    interceptor.addToQueue(400, "");
+    interceptor.addToQueue(200, "");
+    TestSubscriber<TestEntity> subscriber = new TestSubscriber<>();
+    testService.getEntity().subscribe(subscriber);
+    TestEntity testEntity = subscriber.getOnNextEvents().get(0);
+    Assert.assertSame(name, testEntity.getTestString());
+    subscriber.assertCompleted();
+    subscriber.assertNoErrors();
+  }
+
+  @Test
+  public void ignoringCorrectly() throws Exception {
+    String name = "testName";
+    Preprocessor<Observable<TestEntity>> testEntityPreprocessor = createDefaultTestEntityPreprocessor(name);
+    initRetrofit(Collections.singletonList(testEntityPreprocessor));
+    interceptor.addToQueue(200, "");
+    TestSubscriber<TestEntity> subscriber = new TestSubscriber<>();
+    testService.getEntityIgnored().subscribe(subscriber);
+    TestEntity testEntity = subscriber.getOnNextEvents().get(0);
+    Assert.assertSame(null, testEntity.getTestString());
+    subscriber.assertCompleted();
+    subscriber.assertNoErrors();
+  }
+
+  @Test
+  public void twoPreprocessorsWorksCorrectly() throws Exception {
+    String name = "testName";
+    int testInt = 10;
+    Preprocessor<Observable<TestEntity>> testEntityPreprocessor = createDefaultTestEntityPreprocessor(name);
+    Preprocessor<Observable<? extends TestEntity>> universalPreprocessor = new Preprocessor<Observable<? extends TestEntity>>() {
+      @Override
+      public Observable<? extends TestEntity> preprocess(Observable<? extends TestEntity> source) {
+        return source.doOnNext(o -> o.setTestInt(testInt));
+      }
+    };
+    initRetrofit(Arrays.asList(testEntityPreprocessor, universalPreprocessor));
+    interceptor.addToQueue(200, "");
+    TestSubscriber<TestEntity> subscriber = new TestSubscriber<>();
+    testService.getEntity().subscribe(subscriber);
+    TestEntity testEntity = subscriber.getOnNextEvents().get(0);
+    Assert.assertSame(name, testEntity.getTestString());
+    Assert.assertSame(testInt, testEntity.getTestInt());
+    subscriber.assertCompleted();
+    subscriber.assertNoErrors();
+  }
+
+  @Test
+  public void noPreprocessorDoesNotChangesAnything() throws Exception {
     initRetrofit(new ArrayList<>());
     interceptor.addToQueue(200, "");
     TestSubscriber<TestEntity> subscriber = new TestSubscriber<>();
@@ -81,16 +137,11 @@ public class Tests {
     subscriber.assertNoErrors();
   }
 
-  private <T> FlatMapper<T> createFlatmapperForClass(Class<T> tClass, Function<Observable<T>, Observable<T>> consumer) {
-    return new FlatMapper<T>() {
+  private Preprocessor<Observable<TestEntity>> createDefaultTestEntityPreprocessor(String testName) {
+    return new Preprocessor<Observable<TestEntity>>() {
       @Override
-      public Class<T> getResponseClass() {
-        return tClass;
-      }
-
-      @Override
-      public Observable<T> flatMapInto(Observable<T> source) {
-        return consumer.apply(source);
+      public Observable<TestEntity> preprocess(Observable<TestEntity> source) {
+        return source.doOnNext(testEntity -> testEntity.setTestString(testName));
       }
     };
   }
