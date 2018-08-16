@@ -39,9 +39,9 @@ Main features:
 **Example:**  
 Create some Preprocessors
 ```
-Preprocessor&lt;Observable&lt;TestEntity>> preprocessor = new Preprocessor&lt;Observable&lt;TestEntity>>() {
+Preprocessor<Observable<TestEntity>> preprocessor = new Preprocessor<Observable<TestEntity>>() {
       @Override
-      public Observable&lt;TestEntity> preprocess(Observable&lt;TestEntity> source) {
+      public Observable<TestEntity> preprocess(Observable<TestEntity> source) {
         //preprocess observable here
         return source.doOnNext(testEntity -> {
           //save to database
@@ -52,7 +52,7 @@ Preprocessor&lt;Observable&lt;TestEntity>> preprocessor = new Preprocessor&lt;Ob
 ```
 Add all of them into list:
 ```
-List&lt;Preprocessor> preprocessors = new ArrayList();
+List<Preprocessor> preprocessors = new ArrayList();
 preprocessors.add(firstEntityPreprocessor);
 preprocessors.add(secondEntityPreprocessor);
 ```
@@ -76,12 +76,12 @@ Add annotation to api call that you don't want to preprocess and thats all.
 ```
 public interface YourAwesomeApiService {
   @GET("/cookies")
-  Observable&lt;List&lt;Cookies>> getCookies();
+  Observable<List<Cookies>> getCookies();
 
   //All premappers related to Cookies will be ignored here
   @PUT("/cookie")
   @PreprocessIgnore
-  Observable&lt;Cookie> editCookie(@Body EditCookiesProtocol protocol);
+  Observable<Cookie> editCookie(@Body EditCookiesProtocol protocol);
 }
 ```
 
@@ -91,9 +91,9 @@ You can use wildcards and multiple premappers with same signature to preprocess 
 **Examples:**  
 Preprocessor for every request that makes one retry in case of error:
 ```
-Preprocessor&lt;Observable&lt;?>> retryPreprocessor = new Preprocessor&lt;Observable&lt;?>>() {
+Preprocessor<Observable<?>> retryPreprocessor = new Preprocessor<Observable<?>>() {
       @Override
-      public Observable&lt;?> preprocess(Observable&lt;?> source) {
+      public Observable<?> preprocess(Observable<?> source) {
         return source.retry(1);
       }
     };
@@ -101,9 +101,9 @@ Preprocessor&lt;Observable&lt;?>> retryPreprocessor = new Preprocessor&lt;Observ
  Preprocessor that saves all cookies and its subclass inside cache:
 ```
 Cache cache = dependenciesProvider.getCache();
-Preprocessor&lt;Observable&lt;? extends Cookie>> cookiePreprocessor = new Preprocessor&lt;Observable&lt;? extends Cookie>>() {
+Preprocessor<Observable< extends Cookie>> cookiePreprocessor = new Preprocessor<Observable<? extends Cookie>>() {
       @Override
-      public Observable&lt;? extends Cookie> preprocess(Observable&lt;? extends Cookie> source) {
+      public Observable<? extends Cookie> preprocess(Observable<? extends Cookie> source) {
         return source.doOnNext(cookie -> cache.SaveCookie(cookie));
       }
     };
