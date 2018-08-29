@@ -41,8 +41,8 @@ public class PreprocessAdapter extends CallAdapter.Factory {
   @Override
   public CallAdapter<?, ?> get(Type returnType, Annotation[] annotations, Retrofit retrofit) {
     CallAdapter<?, ?> result = wrapped.get(returnType, annotations, retrofit);
-    List<Preprocessor> preprocessors = getNeededPreprocessors(returnType);
-    if (result != null && !preprocessors.isEmpty() && !containsAnnotation(annotations, PreprocessIgnore.class))
+    List<Preprocessor> preprocessors;
+    if (result != null && !containsAnnotation(annotations, PreprocessIgnore.class) && !(preprocessors = getNeededPreprocessors(returnType)).isEmpty())
       return new PremapperCallAdapter(result, preprocessors);
     return result;
   }
@@ -50,7 +50,7 @@ public class PreprocessAdapter extends CallAdapter.Factory {
   private List<Preprocessor> getNeededPreprocessors(Type returnType) {
     List<Preprocessor> result = new ArrayList<>();
     for (Preprocessor preprocessor : preprocessors) {
-      if (isAssignableFromTo(returnType,getFirstNonSyntheticMethodForName(preprocessor, "preprocess").getGenericReturnType()))
+      if (isAssignableFromTo(returnType, getFirstNonSyntheticMethodForName(preprocessor, "preprocess").getGenericReturnType()))
         result.add(preprocessor);
     }
     return result;

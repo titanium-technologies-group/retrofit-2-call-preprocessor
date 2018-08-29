@@ -123,3 +123,5 @@ Release notes
 > * Added optional ignore for premap
 > * Added support of multiple premappers
 > * Added support of wildcard premappers
+### 1.1.1
+> * Premapper lazy initialization
