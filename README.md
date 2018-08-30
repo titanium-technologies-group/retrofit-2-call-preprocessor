@@ -22,7 +22,7 @@ allprojects {
 ```
 **Step 2.** Add the dependency
 ```
-compile 'codes.titanium:preprocessor:1.1.0'
+compile 'codes.titanium:preprocessor:1.1.1'
 ```
 
 Basic Usage
@@ -107,6 +107,16 @@ Preprocessor<Observable< extends Cookie>> cookiePreprocessor = new Preprocessor<
         return source.doOnNext(cookie -> cache.SaveCookie(cookie));
       }
     };
+```
+
+Proguard
+---
+If you are using proguard add this into your proguard-rules.pro
+```
+# Premapper
+-keepclasseswithmembernames class * implements codes.titanium.premapper.Preprocessor {
+    public ** preprocess(**);
+}
 ```
 
 Todo
