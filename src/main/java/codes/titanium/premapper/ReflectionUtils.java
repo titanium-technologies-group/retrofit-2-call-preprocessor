@@ -15,7 +15,7 @@ class ReflectionUtils {
     if (instance.getClass().isSynthetic())
       throw new IllegalStateException("Do not use preprocessors as lambdas because of type erasure");
     for (Method method : instance.getClass().getMethods()) {
-      if (method.getName().equals(name) && !method.isBridge())
+      if (method.getName().equals(name) && !method.isBridge() && !method.isSynthetic())
         return method;
     }
     throw new NullPointerException("Not found non synthetic method for name " + name);

@@ -22,7 +22,7 @@ allprojects {
 ```
 **Step 2.** Add the dependency
 ```
-compile 'codes.titanium:preprocessor:1.1.1'
+compile 'codes.titanium:preprocessor:1.1.2'
 ```
 
 Basic Usage
@@ -78,16 +78,16 @@ public interface YourAwesomeApiService {
   @GET("/cookies")
   Observable<List<Cookies>> getCookies();
 
-  //All premappers related to Cookies will be ignored here
+  //All preprocessors related to Cookies will be ignored here
   @PUT("/cookie")
   @PreprocessIgnore
   Observable<Cookie> editCookie(@Body EditCookiesProtocol protocol);
 }
 ```
 
-Wildcard premappers
+Wildcard preprocessors
 ---
-You can use wildcards and multiple premappers with same signature to preprocess wide spectrum of types  
+You can use wildcards and multiple preprocessors with same signature to preprocess wide spectrum of types  
 **Examples:**  
 Preprocessor for every request that makes one retry in case of error:
 ```
@@ -121,17 +121,19 @@ If you are using proguard add this into your proguard-rules.pro
 
 Todo
 ------------
-* Premapper priority
+* Preprocessor priority
 
 Release notes
 -------------
 ### 1.0.0
 > * Initial release
 ### 1.1.0
-> * Removed unnecessary abstract method from Premapper
+> * Removed unnecessary abstract method from Preprocessor
 > * Can wrap any call adapter
 > * Added optional ignore for premap
-> * Added support of multiple premappers
-> * Added support of wildcard premappers
+> * Added support of multiple preprocessors
+> * Added support of wildcard preprocessors
 ### 1.1.1
-> * Premapper lazy initialization
+> * Preprocessor lazy initialization
+### 1.1.2
+> * Fixed bug causing undefined behavior with kotlin preprocessors
